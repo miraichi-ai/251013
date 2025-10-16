@@ -1,0 +1,720 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Dify自動問い合わせ対応システム 完全図解</title>
+  <link href="https://fonts.googleapis.com/css2?family=Kaisei+Decol&family=Noto+Sans+JP:wght@400;700&display=swap" rel="stylesheet">
+  
+  <!-- Mermaid.js の読み込み -->
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/mermaid/10.6.1/mermaid.min.js"></script>
+  <script>
+    document.addEventListener('DOMContentLoaded', () => {
+      mermaid.initialize({
+        startOnLoad: true,
+        theme: 'base',
+        securityLevel: 'loose',
+        fontFamily: '"Noto Sans JP", sans-serif',
+        themeVariables: {
+          primaryColor: '#4CAF50',
+          primaryTextColor: '#333',
+          primaryBorderColor: '#009688',
+          lineColor: '#9575CD',
+          secondaryColor: '#FFC107',
+          tertiaryColor: '#E91E63'
+        },
+        flowchart: {
+          cornerRadius: 15,
+          curve: 'cardinal',
+          htmlLabels: true
+        }
+      });
+    });
+  </script>
+  
+  <style>
+    * {
+      margin: 0;
+      padding: 0;
+      box-sizing: border-box;
+    }
+    
+    body {
+      font-family: 'Noto Sans JP', sans-serif;
+      background: linear-gradient(135deg, #FAFAFA 0%, #f0f0f0 100%);
+      color: #333;
+      line-height: 1.8;
+      padding: 20px;
+    }
+    
+    .container {
+      max-width: 1200px;
+      margin: 0 auto;
+      background: #fff;
+      border-radius: 20px;
+      box-shadow: 0 10px 40px rgba(0,0,0,0.1);
+      overflow: hidden;
+    }
+    
+    header {
+      background: linear-gradient(135deg, #4CAF50 0%, #009688 100%);
+      color: #333;
+      padding: 40px;
+      text-align: center;
+    }
+    
+    header h1 {
+      font-size: 2.5em;
+      margin-bottom: 10px;
+      text-shadow: 2px 2px 4px rgba(0,0,0,0.1);
+    }
+    
+    header p {
+      font-size: 1.2em;
+      opacity: 0.9;
+    }
+    
+    .hero-emoji {
+      font-size: 4em;
+      margin: 20px 0;
+    }
+    
+    main {
+      padding: 40px;
+    }
+    
+    section {
+      margin-bottom: 60px;
+      padding: 30px;
+      border-radius: 15px;
+      background: #FAFAFA;
+      border-left: 6px solid #4CAF50;
+      transition: transform 0.3s ease, box-shadow 0.3s ease;
+    }
+    
+    section:hover {
+      transform: translateY(-5px);
+      box-shadow: 0 8px 25px rgba(76, 175, 80, 0.15);
+    }
+    
+    section h2 {
+      color: #4CAF50;
+      font-size: 2em;
+      margin-bottom: 25px;
+      display: flex;
+      align-items: center;
+      gap: 15px;
+    }
+    
+    .icon {
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      width: 50px;
+      height: 50px;
+      border-radius: 50%;
+      background: linear-gradient(135deg, #4CAF50, #009688);
+      color: #333;
+      font-size: 1.5em;
+    }
+    
+    .label {
+      display: inline-block;
+      padding: 8px 16px;
+      border-radius: 20px;
+      font-weight: bold;
+      margin: 10px 0;
+      font-size: 0.9em;
+    }
+    
+    .label-conclusion {
+      background: #4CAF50;
+      color: #333;
+    }
+    
+    .label-background {
+      background: #9575CD;
+      color: #333;
+    }
+    
+    .label-example {
+      background: #FFC107;
+      color: #333;
+    }
+    
+    .label-analogy {
+      background: #E91E63;
+      color: #fff;
+    }
+    
+    .content-box {
+      background: #fff;
+      padding: 20px;
+      border-radius: 10px;
+      margin: 15px 0;
+      border-left: 4px solid #009688;
+    }
+    
+    .mermaid {
+      background: #fff;
+      padding: 30px;
+      border-radius: 15px;
+      margin: 30px 0;
+      box-shadow: 0 4px 15px rgba(0,0,0,0.05);
+    }
+    
+    code {
+      background: #f5f5f5;
+      padding: 3px 8px;
+      border-radius: 4px;
+      font-family: 'Courier New', monospace;
+      color: #E91E63;
+      font-size: 0.9em;
+    }
+    
+    pre {
+      background: #2d2d2d;
+      color: #f8f8f2;
+      padding: 20px;
+      border-radius: 10px;
+      overflow-x: auto;
+      margin: 15px 0;
+    }
+    
+    pre code {
+      background: none;
+      color: inherit;
+      padding: 0;
+    }
+    
+    ul {
+      list-style: none;
+      padding-left: 0;
+    }
+    
+    ul li {
+      padding: 10px 0 10px 30px;
+      position: relative;
+    }
+    
+    ul li:before {
+      content: "▶";
+      position: absolute;
+      left: 0;
+      color: #4CAF50;
+      font-size: 0.8em;
+    }
+    
+    .highlight-box {
+      background: linear-gradient(135deg, #FFC107 0%, #FFD54F 100%);
+      padding: 25px;
+      border-radius: 15px;
+      margin: 20px 0;
+      border: 3px solid #FFA000;
+    }
+    
+    .highlight-box strong {
+      color: #333;
+      font-size: 1.1em;
+    }
+    
+    table {
+      width: 100%;
+      border-collapse: collapse;
+      margin: 20px 0;
+      background: #fff;
+      border-radius: 10px;
+      overflow: hidden;
+      box-shadow: 0 2px 10px rgba(0,0,0,0.05);
+    }
+    
+    th, td {
+      padding: 15px;
+      text-align: left;
+      border-bottom: 1px solid #e0e0e0;
+    }
+    
+    th {
+      background: #4CAF50;
+      color: #333;
+      font-weight: bold;
+    }
+    
+    tr:hover {
+      background: #f5f5f5;
+    }
+    
+    .summary {
+      background: linear-gradient(135deg, #4CAF50 0%, #009688 100%);
+      color: #333;
+      padding: 40px;
+      border-radius: 15px;
+      margin-top: 40px;
+      text-align: center;
+    }
+    
+    .summary h2 {
+      color: #333;
+      margin-bottom: 20px;
+    }
+    
+    .summary ul {
+      text-align: left;
+      max-width: 600px;
+      margin: 20px auto;
+    }
+    
+    .flow-step {
+      display: inline-block;
+      padding: 10px 20px;
+      background: #009688;
+      color: #333;
+      border-radius: 25px;
+      margin: 5px;
+      font-weight: bold;
+    }
+    
+    @media (max-width: 768px) {
+      header h1 {
+        font-size: 1.8em;
+      }
+      
+      section h2 {
+        font-size: 1.5em;
+      }
+      
+      main {
+        padding: 20px;
+      }
+    }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <header>
+      <div class="hero-emoji">🤖📧✨</div>
+      <h1>Dify自動問い合わせ対応システム</h1>
+      <p>完全図解マニュアル</p>
+    </header>
+    
+    <main>
+      <!-- システム全体概要 -->
+      <section>
+        <h2><span class="icon">🎯</span>システム全体の概要と目的</h2>
+        
+        <div class="content-box">
+          <span class="label label-conclusion">結論</span>
+          <p><strong>自動化された問い合わせ対応システムで、フォーム入力から適切なメール返信までを完全自動化</strong></p>
+        </div>
+        
+        <div class="content-box">
+          <span class="label label-background">背景</span>
+          <p>手動での問い合わせ対応には時間がかかり、質問の種類に応じた適切な返信を毎回作成するのは非効率です。そのため、AIと自動化ツールを組み合わせた仕組みを構築しました。</p>
+        </div>
+        
+        <div class="content-box">
+          <span class="label label-example">具体例</span>
+          <ul>
+            <li><strong>入力:</strong> Googleフォームからの問い合わせ</li>
+            <li><strong>処理:</strong> Dify(AIツール)が質問を分類</li>
+            <li><strong>出力:</strong> 自動生成されたメールが送信される</li>
+            <li><strong>対応範囲:</strong> コミュニティ入会、大会、セミナー依頼など</li>
+          </ul>
+        </div>
+        
+        <div class="content-box">
+          <span class="label label-analogy">例え話</span>
+          <p>📮 これは、<strong>郵便局の自動仕分け機</strong>のようなものです。手紙(問い合わせ)が届いたら、AIが内容を読んで自動的に適切な部署(返信内容)に振り分け、返事を書いて送り返します。</p>
+        </div>
+        
+        <div class="highlight-box">
+          <span class="label label-conclusion">結論（再確認）</span>
+          <p><strong>フォーム→分類→返信という一連の流れを完全自動化することで、運営者の負担を大幅に削減できます。</strong></p>
+        </div>
+        
+        <div class="mermaid">
+          graph LR
+            A[📝 Googleフォーム] -->|入力| B[🤖 Dify AI]
+            B -->|分類・生成| C[⚙️ GAS]
+            C -->|データ保存| D[📊 スプレッドシート]
+            D -->|確認| E[✅ 承認]
+            E -->|送信| F[📧 メール配信]
+            style A fill:#4CAF50,stroke:#009688,stroke-width:3px
+            style B fill:#9575CD,stroke:#7E57C2,stroke-width:3px
+            style C fill:#FFC107,stroke:#FFA000,stroke-width:3px
+            style D fill:#009688,stroke:#00796B,stroke-width:3px
+            style E fill:#E91E63,stroke:#C2185B,stroke-width:3px
+            style F fill:#4CAF50,stroke:#388E3C,stroke-width:3px
+        </div>
+      </section>
+
+      <!-- フォームからスプレッドシート -->
+      <section>
+        <h2><span class="icon">📥</span>フォームからスプレッドシートへのデータフロー</h2>
+        
+        <div class="content-box">
+          <span class="label label-conclusion">結論</span>
+          <p><strong>Googleフォームの回答が自動的にスプレッドシートに蓄積され、A列とL列に必要なデータが格納されます。</strong></p>
+        </div>
+        
+        <div class="content-box">
+          <span class="label label-background">背景</span>
+          <p>フォームからの入力データをそのまま処理するのではなく、スプレッドシートを中間データベースとして活用することで、データの管理と後処理が容易になります。</p>
+        </div>
+        
+        <div class="content-box">
+          <span class="label label-example">具体例</span>
+          <ul>
+            <li><strong>チェックボックス:</strong> フォーム送信時に最初にチェック</li>
+            <li><strong>A列:</strong> DifyまたはGASから送られてきた内容</li>
+            <li><strong>L列:</strong> 同じく処理されたデータ</li>
+            <li><strong>データの流れ:</strong> フォーム入力 → スプレッドシート → Dify → GAS</li>
+          </ul>
+        </div>
+        
+        <div class="content-box">
+          <span class="label label-analogy">例え話</span>
+          <p>🍽️ <strong>レストランの注文システム</strong>に似ています。お客さんが注文票(フォーム)に記入すると、その内容がキッチンの管理ボード(スプレッドシート)に表示され、シェフ(Dify/GAS)が調理(処理)を開始します。</p>
+        </div>
+        
+        <div class="highlight-box">
+          <span class="label label-conclusion">結論（再確認）</span>
+          <p><strong>スプレッドシートを中継地点とすることで、データの可視化と管理が容易になり、トラブルシューティングも簡単になります。</strong></p>
+        </div>
+        
+        <div class="mermaid">
+          sequenceDiagram
+            participant F as 📝 フォーム
+            participant S as 📊 スプレッドシート
+            participant D as 🤖 Dify
+            participant G as ⚙️ GAS
+            F->>S: 回答を送信
+            S->>D: データ転送(A列)
+            D->>G: JSON出力
+            G->>S: 処理結果(L列)
+            S->>S: データ蓄積・管理
+        </div>
+      </section>
+
+      <!-- Difyによる質問分類 -->
+      <section>
+        <h2><span class="icon">🤖</span>Difyによる質問分類と処理</h2>
+        
+        <div class="content-box">
+          <span class="label label-conclusion">結論</span>
+          <p><strong>Dify(AIツール)が質問内容を分析し、「大会」「セミナー依頼」などのカテゴリーに自動分類し、それぞれに適した返信を生成します。</strong></p>
+        </div>
+        
+        <div class="content-box">
+          <span class="label label-background">背景</span>
+          <p>問い合わせの種類は多岐にわたり、それぞれに異なる対応が必要です。人間が毎回判断して返信を作成するのは時間がかかるため、AIによる自動分類が必要でした。</p>
+        </div>
+        
+        <div class="content-box">
+          <span class="label label-example">具体例</span>
+          <p><strong>質問分類の結果:</strong></p>
+          <ul>
+            <li>「大会」の場合 → 大会リンク + アンケート協力依頼</li>
+            <li>「セミナー依頼」の場合 → 日程調整リンク</li>
+            <li><strong>環境変数:</strong> リンクURLなどは環境変数として設定</li>
+            <li><strong>Webhook:</strong> DifyからGASへJSONデータを送信</li>
+          </ul>
+        </div>
+        
+        <div class="content-box">
+          <span class="label label-analogy">例え話</span>
+          <p>🏥 <strong>病院の受付システム</strong>のようなものです。患者(問い合わせ)の症状(質問内容)を聞いて、適切な診療科(返信テンプレート)に自動で案内します。</p>
+        </div>
+        
+        <div class="highlight-box">
+          <span class="label label-conclusion">結論（再確認）</span>
+          <p><strong>AIによる自動分類により、24時間365日、即座に適切な返信が可能になります。</strong></p>
+        </div>
+        
+        <div class="mermaid">
+          graph TD
+            A[📩 問い合わせ受信] --> B{🤖 Dify AI分析}
+            B -->|大会関連| C[🏆 大会案内テンプレート]
+            B -->|セミナー| D[🎓 セミナー調整テンプレート]
+            B -->|入会| E[👥 入会案内テンプレート]
+            B -->|その他| F[📝 一般対応テンプレート]
+            C --> G[📧 自動返信生成]
+            D --> G
+            E --> G
+            F --> G
+            style B fill:#9575CD,stroke:#7E57C2,stroke-width:3px
+            style G fill:#4CAF50,stroke:#388E3C,stroke-width:3px
+        </div>
+      </section>
+
+      <!-- JSON形式での出力 -->
+      <section>
+        <h2><span class="icon">📦</span>JSON形式での出力とデータ構造</h2>
+        
+        <div class="content-box">
+          <span class="label label-conclusion">結論</span>
+          <p><strong>Difyからの出力を必ずJSON形式に統一し、「ID」「Subject」「Body」の3つのキーで構造化することで、後続処理を安定化させました。</strong></p>
+        </div>
+        
+        <div class="content-box">
+          <span class="label label-background">背景</span>
+          <p>自由形式のテキスト出力では、パースエラーや処理の失敗が発生しやすくなります。データ構造を統一することで、確実にGAS側で処理できるようにする必要がありました。</p>
+        </div>
+        
+        <div class="content-box">
+          <span class="label label-example">具体例</span>
+          <p><strong>JSON構造の例:</strong></p>
+          <pre><code>{
+  "ID": "12345",
+  "Subject": "大会参加のお申し込みありがとうございます",
+  "Body": "この度は大会へのお申し込み、誠にありがとうございます。\n大会リンク: https://example.com\nアンケートにもご協力ください。"
+}</code></pre>
+          <ul>
+            <li><strong>6つの回答:</strong> すべてJSON形式で統一</li>
+            <li><strong>HTTPリクエスト:</strong> POSTメソッドでGASに送信</li>
+            <li><strong>GAS側の処理:</strong> <code>JSON.parse()</code>でID、件名、本文に分解</li>
+          </ul>
+        </div>
+        
+        <div class="content-box">
+          <span class="label label-analogy">例え話</span>
+          <p>📦 <strong>宅配便の伝票</strong>のようなものです。送り主(ID)、品名(Subject)、配送先(Body)が決まった形式で書かれていれば、配送システム(GAS)がスムーズに処理できます。</p>
+        </div>
+        
+        <div class="highlight-box">
+          <span class="label label-conclusion">結論（再確認）</span>
+          <p><strong>データ構造の統一により、エラーを最小化し、メンテナンス性の高いシステムを構築できました。</strong></p>
+        </div>
+      </section>
+
+      <!-- GASによるメール送信 -->
+      <section>
+        <h2><span class="icon">📧</span>GAS(Google Apps Script)によるメール送信</h2>
+        
+        <div class="content-box">
+          <span class="label label-conclusion">結論</span>
+          <p><strong>GASが受け取ったJSONデータを解析し、指定されたメールアドレスに自動的にメールを送信します。</strong></p>
+        </div>
+        
+        <div class="content-box">
+          <span class="label label-background">背景</span>
+          <p>フォームの回答者に迅速に返信するため、人間の介入なしに自動でメールを送信する仕組みが必要でした。</p>
+        </div>
+        
+        <div class="content-box">
+          <span class="label label-example">具体例</span>
+          <p><strong>GASの処理フロー:</strong></p>
+          <ul>
+            <li><strong>関数:</strong> 「ポスト可能数」という関数を作成</li>
+            <li><strong>処理の流れ:</strong>
+              <ol style="padding-left: 20px;">
+                <li>HTTPリクエストを受信</li>
+                <li>JSONをパース(分解)</li>
+                <li>ID、Subject、Bodyを取得</li>
+                <li><code>GmailApp.sendEmail()</code>でメール送信</li>
+              </ol>
+            </li>
+            <li><strong>ID活用:</strong> 最初に投げたIDをキーとして、スプレッドシートの該当行を特定</li>
+          </ul>
+        </div>
+        
+        <div class="content-box">
+          <span class="label label-analogy">例え話</span>
+          <p>🍹 <strong>自動販売機</strong>のようなものです。お金(JSON)を入れて、ボタン(リクエスト)を押せば、自動的に商品(メール)が出てくるのです。</p>
+        </div>
+        
+        <div class="highlight-box">
+          <span class="label label-conclusion">結論（再確認）</span>
+          <p><strong>GASを活用することで、Googleエコシステム内でシームレスな自動化が実現できます。</strong></p>
+        </div>
+        
+        <div class="mermaid">
+          flowchart LR
+            A[🔗 Webhook受信] --> B[📦 JSON解析]
+            B --> C[🔑 ID取得]
+            B --> D[📝 Subject取得]
+            B --> E[📄 Body取得]
+            C --> F[📊 シート検索]
+            D --> G[📧 メール構築]
+            E --> G
+            F --> H[✅ 行特定]
+            G --> I[📮 送信実行]
+            H --> I
+            style A fill:#FFC107,stroke:#FFA000,stroke-width:3px
+            style I fill:#4CAF50,stroke:#388E3C,stroke-width:3px
+        </div>
+      </section>
+
+      <!-- データの横持ち問題 -->
+      <section>
+        <h2><span class="icon">🔄</span>データの横持ち問題とVLOOKUPでの解決</h2>
+        
+        <div class="content-box">
+          <span class="label label-conclusion">結論</span>
+          <p><strong>IDをキーとしてVLOOKUP関数を使用することで、横方向のデータ連携という技術的課題を解決しました。</strong></p>
+        </div>
+        
+        <div class="content-box">
+          <span class="label label-background">背景</span>
+          <p>スプレッドシートで縦に並んだデータを横に持っていく(別の列に転記する)のは、技術的に「カロリーが高い」(複雑で難しい)作業です。効率的な方法を見つける必要がありました。</p>
+        </div>
+        
+        <div class="content-box">
+          <span class="label label-example">具体例</span>
+          <ul>
+            <li><strong>課題:</strong> フォームのIDと返信内容を同じ行で管理したい</li>
+            <li><strong>試行錯誤:</strong>
+              <ul style="padding-left: 20px;">
+                <li>最初は横にデータをつなげたかった</li>
+                <li>しかし方法が分からなかった</li>
+              </ul>
+            </li>
+            <li><strong>解決策:</strong>
+              <ul style="padding-left: 20px;">
+                <li>VLOOKUP関数を使用</li>
+                <li>IDで検索して該当データを引っ張ってくる</li>
+                <li>値の貼り付けで固定化</li>
+              </ul>
+            </li>
+          </ul>
+        </div>
+        
+        <div class="content-box">
+          <span class="label label-analogy">例え話</span>
+          <p>📚 <strong>図書館の本の管理</strong>に似ています。背表紙のID(請求記号)を見れば、どの棚(行)にある本(データ)でも、すぐに見つけられます。</p>
+        </div>
+        
+        <div class="highlight-box">
+          <span class="label label-conclusion">結論（再確認）</span>
+          <p><strong>VLOOKUPを活用することで、複雑なデータ連携を関数ベースで実現し、コードの複雑化を避けられました。</strong></p>
+        </div>
+        
+        <table>
+          <thead>
+            <tr>
+              <th>ID</th>
+              <th>問い合わせ内容</th>
+              <th>VLOOKUP結果</th>
+              <th>返信内容</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr>
+              <td>a0000001</td>
+              <td>大会について</td>
+              <td>=VLOOKUP(A2,...)</td>
+              <td>大会案内メール</td>
+            </tr>
+            <tr>
+              <td>a0000002</td>
+              <td>セミナー依頼</td>
+              <td>=VLOOKUP(A3,...)</td>
+              <td>日程調整メール</td>
+            </tr>
+            <tr>
+              <td>a0000003</td>
+              <td>入会希望</td>
+              <td>=VLOOKUP(A4,...)</td>
+              <td>入会案内メール</td>
+            </tr>
+          </tbody>
+        </table>
+      </section>
+
+      <!-- Googleフォームの自動作成 -->
+      <section>
+        <h2><span class="icon">🛠️</span>Googleフォームの自動作成機能</h2>
+        
+        <div class="content-box">
+          <span class="label label-conclusion">結論</span>
+          <p><strong>GASを使ってGoogleフォームの項目を自動生成できる機能を実装しています。</strong></p>
+        </div>
+        
+        <div class="content-box">
+          <span class="label label-background">背景</span>
+          <p>毎回手動でフォームを作成するのは時間がかかります。特に定型的なフォームの場合、自動化することで大幅な時間短縮が可能です。</p>
+        </div>
+        
+        <div class="content-box">
+          <span class="label label-example">具体例</span>
+          <ul>
+            <li><strong>GASスクリプト:</strong> 「フォーム作成」という関数を実行</li>
+            <li><strong>自動化される項目:</strong>
+              <ul style="padding-left: 20px;">
+                <li>メールアドレス入力欄</li>
+                <li>回答の検証(バリデーション)</li>
+                <li>その他のフォーム項目</li>
+              </ul>
+            </li>
+            <li><strong>カスタマイズ:</strong> 問い合わせポイント(質問内容)に応じて項目を変更可能</li>
+          </ul>
+        </div>
+        
+        <div class="content-box">
+          <span class="label label-analogy">例え話</span>
+          <p>🖨️ <strong>テンプレート印刷機</strong>のようなものです。ボタンを押せば、決まった形式の書類(フォーム)が自動的に完成します。</p>
+        </div>
+        
+        <div class="highlight-box">
+          <span class="label label-conclusion">結論（再確認）</span>
+          <p><strong>GASでフォームを自動生成することで、運用開始までの時間を大幅に短縮し、ミスも減らせます。</strong></p>
+        </div>
+      </section>
+
+      <!-- 全体のまとめ -->
+      <div class="summary">
+        <h2>🎓 全体のまとめ</h2>
+        
+        <div class="mermaid">
+          graph TB
+            A[📝 Googleフォーム<br/>問い合わせ入力] --> B[📊 スプレッドシート<br/>データ蓄積]
+            B --> C[🤖 Dify AI<br/>質問分類・返信生成]
+            C --> D[⚙️ GAS<br/>JSON解析・処理]
+            D --> E[✅ 承認プロセス<br/>最終確認]
+            E --> F[📧 メール送信<br/>自動返信]
+            
+            style A fill:#4CAF50,stroke:#009688,stroke-width:4px
+            style B fill:#FFC107,stroke:#FFA000,stroke-width:4px
+            style C fill:#9575CD,stroke:#7E57C2,stroke-width:4px
+            style D fill:#009688,stroke:#00796B,stroke-width:4px
+            style E fill:#E91E63,stroke:#C2185B,stroke-width:4px
+            style F fill:#4CAF50,stroke:#388E3C,stroke-width:4px
+        </div>
+        
+        <p style="margin: 30px 0; font-size: 1.2em; line-height: 2;">
+          このシステムは、<span class="flow-step">Googleフォーム</span> → 
+          <span class="flow-step">スプレッドシート</span> → 
+          <span class="flow-step">Dify(AI)</span> → 
+          <span class="flow-step">GAS</span> → 
+          <span class="flow-step">メール送信</span>という一連の流れを自動化したものです。
+        </p>
+        
+        <div style="background: rgba(255,255,255,0.2); padding: 30px; border-radius: 15px; margin: 30px 0;">
+          <h3 style="margin-bottom: 20px; font-size: 1.5em;">💡 主な技術要素</h3>
+          <ul style="text-align: left; max-width: 600px; margin: 0 auto;">
+            <li>Googleフォーム、スプレッドシート</li>
+            <li>Dify(AIによる質問分類)</li>
+            <li>Webhook、JSON</li>
+            <li>GAS(Google Apps Script)</li>
+            <li>VLOOKUP関数</li>
+          </ul>
+        </div>
+        
+        <div style="background: rgba(255,255,255,0.2); padding: 30px; border-radius: 15px;">
+          <h3 style="margin-bottom: 20px; font-size: 1.5em;">✨ 実現できること</h3>
+          <ul style="text-align: left; max-width: 600px; margin: 0 auto;">
+            <li>問い合わせの自動分類</li>
+            <li>質問内容に応じた適切な返信の自動生成</li>
+            <li>24時間365日の即時対応</li>
+            <li>人的リソースの大幅削減</li>
+          </ul>
+        </div>
+        
+        <p style="margin-top: 30px; font-size: 1.1em;">
+          このような自動化システムは、コミュニティ運営、カスタマーサポート、<br>イベント管理など、様々な場面で応用可能です。
+        </p>
+      </div>
+    </main>
+  </div>
+</body>
+</html>

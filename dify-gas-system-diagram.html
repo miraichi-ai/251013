@@ -1,0 +1,585 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Googleフォーム×Dify自動応答システムの仕組み</title>
+  <link href="https://fonts.googleapis.com/css2?family=Kosugi+Maru&display=swap" rel="stylesheet">
+  
+  <!-- Mermaid.js の読み込み -->
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/mermaid/10.6.1/mermaid.min.js"></script>
+  <script>
+    document.addEventListener('DOMContentLoaded', () => {
+      mermaid.initialize({
+        startOnLoad: true,
+        theme: 'base',
+        securityLevel: 'loose',
+        fontFamily: '"Kosugi Maru", sans-serif',
+        themeVariables: {
+          primaryColor: '#4CAF50',
+          primaryTextColor: '#333',
+          primaryBorderColor: '#E91E63',
+          lineColor: '#009688',
+          secondaryColor: '#FFC107',
+          tertiaryColor: '#9575CD'
+        },
+        flowchart: {
+          cornerRadius: 15,
+          curve: 'cardinal',
+          htmlLabels: true
+        }
+      });
+    });
+  </script>
+  
+  <style>
+    * {
+      margin: 0;
+      padding: 0;
+      box-sizing: border-box;
+    }
+    
+    body {
+      font-family: 'Kosugi Maru', sans-serif;
+      background: linear-gradient(135deg, #FAFAFA 0%, #E8F5E9 100%);
+      color: #333;
+      padding: 20px;
+      line-height: 1.8;
+    }
+    
+    .container {
+      max-width: 1200px;
+      margin: 0 auto;
+      background: white;
+      border-radius: 20px;
+      padding: 40px;
+      box-shadow: 0 10px 40px rgba(0,0,0,0.1);
+    }
+    
+    h1 {
+      color: #4CAF50;
+      text-align: center;
+      font-size: 2.2em;
+      margin-bottom: 20px;
+      padding: 20px;
+      background: linear-gradient(135deg, #4CAF50 0%, #009688 100%);
+      color: white;
+      border-radius: 15px;
+      box-shadow: 0 5px 15px rgba(76, 175, 80, 0.3);
+    }
+    
+    .intro {
+      background: #E8F5E9;
+      padding: 25px;
+      border-radius: 15px;
+      margin: 30px 0;
+      border-left: 5px solid #4CAF50;
+      font-size: 1.1em;
+    }
+    
+    .section {
+      margin: 40px 0;
+      padding: 30px;
+      background: #FAFAFA;
+      border-radius: 15px;
+      border: 2px solid #E0E0E0;
+    }
+    
+    h2 {
+      color: #009688;
+      font-size: 1.8em;
+      margin-bottom: 20px;
+      padding-bottom: 10px;
+      border-bottom: 3px solid #009688;
+      display: flex;
+      align-items: center;
+      gap: 10px;
+    }
+    
+    h3 {
+      color: #9575CD;
+      font-size: 1.4em;
+      margin: 25px 0 15px;
+      display: flex;
+      align-items: center;
+      gap: 10px;
+    }
+    
+    .icon {
+      display: inline-block;
+      width: 40px;
+      height: 40px;
+      border-radius: 50%;
+      text-align: center;
+      line-height: 40px;
+      font-size: 1.2em;
+    }
+    
+    .icon-main {
+      background: linear-gradient(135deg, #4CAF50, #009688);
+      color: white;
+    }
+    
+    .icon-sub {
+      background: linear-gradient(135deg, #9575CD, #E91E63);
+      color: white;
+    }
+    
+    .icon-point {
+      background: linear-gradient(135deg, #FFC107, #FF9800);
+      color: white;
+    }
+    
+    .step-box {
+      background: white;
+      padding: 20px;
+      margin: 20px 0;
+      border-radius: 12px;
+      border-left: 5px solid #4CAF50;
+      box-shadow: 0 3px 10px rgba(0,0,0,0.1);
+    }
+    
+    .step-number {
+      display: inline-block;
+      width: 35px;
+      height: 35px;
+      background: linear-gradient(135deg, #4CAF50, #009688);
+      color: white;
+      border-radius: 50%;
+      text-align: center;
+      line-height: 35px;
+      font-weight: bold;
+      margin-right: 10px;
+      font-size: 1.1em;
+    }
+    
+    .example-box {
+      background: #FFF9C4;
+      padding: 20px;
+      border-radius: 12px;
+      margin: 20px 0;
+      border: 2px dashed #FFC107;
+    }
+    
+    .example-title {
+      color: #F57C00;
+      font-weight: bold;
+      margin-bottom: 10px;
+      font-size: 1.1em;
+    }
+    
+    .point-box {
+      background: linear-gradient(135deg, #E1F5FE 0%, #F3E5F5 100%);
+      padding: 20px;
+      border-radius: 12px;
+      margin: 20px 0;
+      border: 2px solid #9575CD;
+    }
+    
+    .point-title {
+      color: #9575CD;
+      font-weight: bold;
+      margin-bottom: 10px;
+      font-size: 1.2em;
+    }
+    
+    .mermaid {
+      background: white;
+      padding: 20px;
+      border-radius: 12px;
+      margin: 25px 0;
+      box-shadow: 0 3px 15px rgba(0,0,0,0.1);
+    }
+    
+    .comparison-table {
+      width: 100%;
+      border-collapse: collapse;
+      margin: 20px 0;
+      box-shadow: 0 3px 15px rgba(0,0,0,0.1);
+      border-radius: 12px;
+      overflow: hidden;
+    }
+    
+    .comparison-table th {
+      background: linear-gradient(135deg, #4CAF50, #009688);
+      color: white;
+      padding: 15px;
+      text-align: left;
+      font-size: 1.1em;
+    }
+    
+    .comparison-table td {
+      padding: 15px;
+      border-bottom: 1px solid #E0E0E0;
+      background: white;
+    }
+    
+    .comparison-table tr:last-child td {
+      border-bottom: none;
+    }
+    
+    .comparison-table tr:nth-child(even) td {
+      background: #F5F5F5;
+    }
+    
+    .error-box {
+      background: #FFEBEE;
+      padding: 20px;
+      border-radius: 12px;
+      margin: 20px 0;
+      border-left: 5px solid #E91E63;
+    }
+    
+    .success-box {
+      background: #E8F5E9;
+      padding: 20px;
+      border-radius: 12px;
+      margin: 20px 0;
+      border-left: 5px solid #4CAF50;
+    }
+    
+    code {
+      background: #263238;
+      color: #4CAF50;
+      padding: 3px 8px;
+      border-radius: 5px;
+      font-family: monospace;
+      font-size: 0.9em;
+    }
+    
+    .code-block {
+      background: #263238;
+      color: #A5D6A7;
+      padding: 20px;
+      border-radius: 12px;
+      margin: 20px 0;
+      overflow-x: auto;
+      font-family: monospace;
+      line-height: 1.6;
+    }
+    
+    .summary-box {
+      background: linear-gradient(135deg, #4CAF50 0%, #009688 100%);
+      color: white;
+      padding: 30px;
+      border-radius: 15px;
+      margin: 30px 0;
+      box-shadow: 0 5px 20px rgba(76, 175, 80, 0.3);
+    }
+    
+    .summary-box h3 {
+      color: white;
+      border-bottom: 2px solid white;
+      padding-bottom: 10px;
+    }
+    
+    ul {
+      margin: 15px 0 15px 30px;
+    }
+    
+    li {
+      margin: 10px 0;
+      line-height: 1.8;
+    }
+    
+    strong {
+      color: #E91E63;
+      font-weight: bold;
+    }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <h1>🤖 Googleフォーム×Dify 自動おへんじシステムのしくみ</h1>
+    
+    <div class="intro">
+      <strong>🎯 このシステムってなに？</strong><br>
+      これは、人が質問をフォームに書くと、AIが自動で返事を考えて、それをシートに書いてくれる、すごいシステムだよ！まるで、お手紙を出すと、かしこいロボットが自動でお返事を書いてくれるような感じなんだ。
+    </div>
+
+    <!-- 全体の流れ -->
+    <div class="section">
+      <h2><span class="icon icon-main">📋</span>ぜんたいの流れ</h2>
+      
+      <div class="step-box">
+        <p><strong>【けつろん】</strong> このシステムは5つのステップで動いているよ！</p>
+      </div>
+
+      <div class="mermaid">
+graph TB
+    A["👤 ユーザーさん<br/>フォームに質問を書く"] --> B["📝 Googleフォーム<br/>質問をうけとる"]
+    B --> C["📊 スプレッドシート<br/>Form Responses 1<br/>質問をほぞん"]
+    C --> D["⚙️ GAS<br/>自動でうごく<br/>プログラム"]
+    D --> E["🌐 Dify API<br/>AIにしつもんを送る"]
+    E --> F["🤖 AI<br/>かしこいへんじを作る"]
+    F --> G["📝 スプレッドシート<br/>へんじをほぞん"]
+    
+    style A fill:#FFC107
+    style B fill:#4CAF50
+    style C fill:#009688
+    style D fill:#9575CD
+    E fill:#E91E63
+    style F fill:#FF9800
+    style G fill:#4CAF50
+</div>
+
+      <h3><span class="icon icon-sub">📖</span>どうしてこういうしくみなの？</h3>
+      <p>人がいちいち質問に答えるのは大変だよね。だから、AIが自動で答えを作ってくれるようにしたんだ。まるで、宿題を手伝ってくれる優秀なお兄さんやお姉さんがいるみたいなものだよ！</p>
+
+      <div class="example-box">
+        <div class="example-title">🌟 たとえばこんな感じ</div>
+        <p><strong>質問:</strong> 「おまつりは何時からですか？」</p>
+        <p><strong>AI:</strong> 「おまつりは午後2時から始まります。雨でも開催します！」</p>
+        <p>こんなふうに、AIが自動で親切な返事を作ってくれるんだ。</p>
+      </div>
+
+      <div class="point-box">
+        <div class="point-title">💡 ポイント</div>
+        <p>このシステムは、人が寝ている間でも、休んでいる間でも、24時間ずっと働いてくれるんだよ！だから、いつでも質問に答えることができるんだ。</p>
+      </div>
+    </div>
+
+    <!-- 各パーツの役割 -->
+    <div class="section">
+      <h2><span class="icon icon-main">🧩</span>それぞれのパーツの役わり</h2>
+
+      <h3><span class="icon icon-sub">1️⃣</span>Googleフォーム</h3>
+      <div class="step-box">
+        <p><strong>【けつろん】</strong> 質問を書く「入り口」だよ</p>
+        <p><strong>【せつめい】</strong> Googleフォームは、お店の入り口みたいなもの。ここから、お客さん（質問する人）がやってくるんだ。名前や質問を書くと、自動で次のステップに進むよ。</p>
+      </div>
+
+      <h3><span class="icon icon-sub">2️⃣</span>スプレッドシート（Form Responses 1）</h3>
+      <div class="step-box">
+        <p><strong>【けつろん】</strong> 質問を「ノート」にメモする場所だよ</p>
+        <p><strong>【せつめい】</strong> フォームに書かれた質問は、すぐにこのシートに記録されるんだ。まるで、先生が生徒の名前と質問を出席簿に書くような感じだね。</p>
+      </div>
+
+      <div class="example-box">
+        <div class="example-title">🌟 シートの中身はこんな感じ</div>
+        <table class="comparison-table">
+          <thead>
+            <tr>
+              <th>タイムスタンプ</th>
+              <th>名前</th>
+              <th>メール</th>
+              <th>質問</th>
+              <th>ID</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr>
+              <td>2025/10/13 10:30</td>
+              <td>田中さん</td>
+              <td>tanaka@example.com</td>
+              <td>お祭りの時間を教えて</td>
+              <td>001</td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+
+      <h3><span class="icon icon-sub">3️⃣</span>GAS（Google Apps Script）</h3>
+      <div class="step-box">
+        <p><strong>【けつろん】</strong> 自動で動く「ロボット」だよ</p>
+        <p><strong>【せつめい】</strong> GASは、新しい質問が来たら、すぐに気づいて動き出すロボットみたいなもの。質問をAIに届ける「配達員さん」の役割をしているんだ。</p>
+      </div>
+
+      <div class="mermaid">
+flowchart LR
+    A["📝 新しい質問が<br/>シートに追加"] --> B["⚙️ GASが<br/>きづく！"]
+    B --> C["📦 質問を<br/>パッケージング"]
+    C --> D["🚚 Difyに<br/>配達！"]
+    
+    style A fill:#4CAF50
+    style B fill:#9575CD
+    style C fill:#FFC107
+    style D fill:#E91E63
+</div>
+
+      <h3><span class="icon icon-sub">4️⃣</span>Dify API</h3>
+      <div class="step-box">
+        <p><strong>【けつろん】</strong> AIへの「入り口」だよ</p>
+        <p><strong>【せつめい】</strong> Dify APIは、AIの家の玄関みたいなもの。GASが持ってきた質問を受け取って、中のAIに渡すんだ。</p>
+      </div>
+
+      <h3><span class="icon icon-sub">5️⃣</span>AI Workflow（Dify）</h3>
+      <div class="step-box">
+        <p><strong>【けつろん】</strong> かしこい返事を作る「天才」だよ</p>
+        <p><strong>【せつめい】</strong> AIは、受け取った質問を読んで、一番いい答えを考えるんだ。まるで、どんな問題でも解ける天才の先生みたいだね。答えができたら、またGASに返すよ。</p>
+      </div>
+    </div>
+
+    <!-- 動き方の詳細 -->
+    <div class="section">
+      <h2><span class="icon icon-main">⚙️</span>どうやって動いているの？</h2>
+
+      <h3><span class="icon icon-sub">🔧</span>ステップ1: フォーム送信</h3>
+      <div class="step-box">
+        <span class="step-number">1</span>
+        <strong>ユーザーさんがフォームに質問を書いて送信ボタンを押す</strong>
+        <div class="mermaid">
+sequenceDiagram
+    participant U as 👤 ユーザー
+    participant F as 📝 フォーム
+    participant S as 📊 シート
+    
+    U->>F: 質問を書く
+    F->>S: すぐに記録！
+    Note over S: 新しい行が<br/>追加される
+</div>
+      </div>
+
+      <h3><span class="icon icon-sub">🔧</span>ステップ2: GASが起動</h3>
+      <div class="step-box">
+        <span class="step-number">2</span>
+        <strong>シートに新しい行が追加されると、GASが自動で目を覚ます</strong>
+        <p>これを「トリガー」って呼ぶんだよ。目覚まし時計みたいなものだね。</p>
+      </div>
+
+      <h3><span class="icon icon-sub">🔧</span>ステップ3: データを準備</h3>
+      <div class="step-box">
+        <span class="step-number">3</span>
+        <strong>GASが質問の内容を「荷物」にまとめる</strong>
+        <p>質問を、AIが読みやすい形（JSON）に変換するんだ。</p>
+        
+        <div class="code-block">
+// こんな形に変換するよ<br>
+{<br>
+  "inputs": {<br>
+    "form": {<br>
+      "名前": "田中さん",<br>
+      "質問": "お祭りの時間は？"<br>
+    }<br>
+  }<br>
+}
+        </div>
+      </div>
+
+      <h3><span class="icon icon-sub">🔧</span>ステップ4: Difyに送信</h3>
+      <div class="step-box">
+        <span class="step-number">4</span>
+        <strong>GASが荷物をDifyに配達</strong>
+        <div class="mermaid">
+flowchart LR
+    A["⚙️ GAS"] -- "📦 質問データ" --> B["🌐 Dify API"]
+    B -- "🔑 認証OK?" --> C{"✅ チェック"}
+    C -- "OK!" --> D["🤖 AI処理"]
+    C -- "NG..." --> E["❌ エラー"]
+    
+    style A fill:#9575CD
+    style B fill:#E91E63
+    style C fill:#FFC107
+    style D fill:#4CAF50
+    style E fill:#FF5252
+</div>
+      </div>
+
+      <h3><span class="icon icon-sub">🔧</span>ステップ5: AIが答えを作る</h3>
+      <div class="step-box">
+        <span class="step-number">5</span>
+        <strong>AIが質問を読んで、親切な答えを考える</strong>
+        <p>AIは、過去にたくさんの文章を読んで勉強しているから、いい答えが作れるんだ。</p>
+      </div>
+
+      <h3><span class="icon icon-sub">🔧</span>ステップ6: 結果を保存</h3>
+      <div class="step-box">
+        <span class="step-number">6</span>
+        <strong>AIが作った答えをシートに書き込む</strong>
+        <p>これで、後で誰でも答えを見ることができるよ。</p>
+      </div>
+    </div>
+
+    <!-- エラーと修正 -->
+    <div class="section">
+      <h2><span class="icon icon-main">🔧</span>エラーってなに？どう直すの？</h2>
+
+      <h3><span class="icon icon-sub">❌</span>エラーメッセージ</h3>
+      <div class="error-box">
+        <strong>エラー:</strong> Difyへの送信に失敗しました<br>
+        <strong>意味:</strong> 「form」という荷物の入れ物が見つからないよ！
+      </div>
+
+      <div class="step-box">
+        <p><strong>【けつろん】</strong> 荷物の入れ物の名前が違っていたんだ</p>
+        <p><strong>【せつめい】</strong> AIは「form」という名前の箱に入った質問を待っていたのに、違う形で送られてきたから、受け取れなかったんだ。</p>
+      </div>
+
+      <div class="example-box">
+        <div class="example-title">🌟 たとえ話</div>
+        <p>宅配便を受け取るとき、「青い箱で届けてね」って言ったのに、赤い箱で届いたら困るよね。それと同じことが起きたんだ。</p>
+      </div>
+
+      <h3><span class="icon icon-sub">✅</span>修正方法</h3>
+      <div class="success-box">
+        <strong>修正前（NG）:</strong>
+        <div class="code-block">
+{<br>
+  "inputs": {<br>
+    "名前": "田中",<br>
+    "質問": "～"<br>
+  }<br>
+}
+        </div>
+        
+        <strong>修正後（OK）:</strong>
+        <div class="code-block">
+{<br>
+  "inputs": {<br>
+    <span style="color:#FFC107">"form"</span>: {<br>
+      "名前": "田中",<br>
+      "質問": "～"<br>
+    }<br>
+  }<br>
+}
+        </div>
+      </div>
+
+      <div class="point-box">
+        <div class="point-title">💡 直し方のポイント</div>
+        <p>コードの中で、<code>inputs</code> の中に <code>form</code> という箱を作って、その中に質問を入れるようにしたんだ。これで、AIが正しく受け取れるようになるよ！</p>
+      </div>
+    </div>
+
+    <!-- 全体のまとめ -->
+    <div class="summary-box">
+      <h3>🎉 まとめ: このシステムのすごいところ</h3>
+      <ul>
+        <li><strong>自動で動く:</strong> 人が何もしなくても、質問が来たら自動で処理してくれる</li>
+        <li><strong>24時間働く:</strong> 夜でも朝でも、いつでも質問に答えられる</li>
+        <li><strong>ミスが少ない:</strong> AIがちゃんと考えて答えるから、忘れたり間違えたりしない</li>
+        <li><strong>記録が残る:</strong> 全部シートに保存されるから、後で見返せる</li>
+        <li><strong>速い:</strong> 人が考えるより、ずっと速く答えが出る</li>
+      </ul>
+    </div>
+
+    <div class="section">
+      <h2><span class="icon icon-main">🌟</span>最後に</h2>
+      <div class="step-box">
+        <p>このシステムは、たくさんの部品が協力して動いているんだ。フォーム、シート、GAS、Dify、AI...みんなが力を合わせて、質問に自動で答えるという「魔法」を作り出しているんだよ。</p>
+        <p>まるで、オーケストラのように、それぞれの楽器（部品）が自分の役割を果たして、素晴らしい音楽（自動応答）を作り出しているんだね！</p>
+      </div>
+
+      <div class="mermaid">
+mindmap
+  root((🤖 自動応答<br/>システム))
+    📝 入り口
+      Googleフォーム
+      質問を受け取る
+    📊 記録係
+      スプレッドシート
+      データを保存
+    ⚙️ 配達員
+      GAS
+      データを運ぶ
+    🌐 玄関
+      Dify API
+      AIへの入り口
+    🤖 天才
+      AI Workflow
+      答えを作る
+</div>
+    </div>
+  </div>
+</body>
+</html>

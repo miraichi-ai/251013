@@ -1,0 +1,745 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Googleフォーム×Dify AI連携の仕組み図解</title>
+  
+  <!-- Mermaid.js の読み込み -->
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/mermaid/10.6.1/mermaid.min.js"></script>
+  <script>
+    document.addEventListener('DOMContentLoaded', () => {
+      mermaid.initialize({
+        startOnLoad: true,
+        theme: 'base',
+        securityLevel: 'loose',
+        fontFamily: 'sans-serif',
+        themeVariables: {
+          primaryColor: '#4CAF50',
+          primaryTextColor: '#333',
+          primaryBorderColor: '#009688',
+          lineColor: '#9575CD',
+          secondaryColor: '#FFC107',
+          tertiaryColor: '#E91E63'
+        },
+        flowchart: {
+          cornerRadius: 15,
+          curve: 'cardinal',
+          htmlLabels: true
+        }
+      });
+    });
+  </script>
+  
+  <style>
+    * {
+      margin: 0;
+      padding: 0;
+      box-sizing: border-box;
+    }
+    
+    body {
+      font-family: 'Segoe UI', 'Hiragino Sans', 'Yu Gothic', sans-serif;
+      background: linear-gradient(135deg, #FAFAFA 0%, #F5F5F5 100%);
+      color: #333;
+      line-height: 1.8;
+      padding: 20px;
+    }
+    
+    .container {
+      max-width: 1200px;
+      margin: 0 auto;
+      background: #fff;
+      border-radius: 20px;
+      box-shadow: 0 10px 40px rgba(0,0,0,0.1);
+      overflow: hidden;
+    }
+    
+    header {
+      background: linear-gradient(135deg, #4CAF50 0%, #009688 100%);
+      color: #333;
+      padding: 40px;
+      text-align: center;
+    }
+    
+    header h1 {
+      font-size: 2.2em;
+      margin-bottom: 15px;
+      text-shadow: 2px 2px 4px rgba(0,0,0,0.1);
+    }
+    
+    header p {
+      font-size: 1.1em;
+      opacity: 0.95;
+    }
+    
+    .content {
+      padding: 40px;
+    }
+    
+    .section {
+      margin-bottom: 50px;
+      border-left: 5px solid #4CAF50;
+      padding-left: 25px;
+      background: linear-gradient(90deg, rgba(76,175,80,0.05) 0%, transparent 100%);
+      padding: 25px;
+      border-radius: 10px;
+    }
+    
+    .section-title {
+      color: #4CAF50;
+      font-size: 1.8em;
+      margin-bottom: 20px;
+      display: flex;
+      align-items: center;
+      gap: 15px;
+    }
+    
+    .icon {
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      width: 50px;
+      height: 50px;
+      border-radius: 50%;
+      font-size: 1.5em;
+    }
+    
+    .icon.main { background: linear-gradient(135deg, #4CAF50, #009688); }
+    .icon.step { background: linear-gradient(135deg, #9575CD, #7E57C2); }
+    .icon.feature { background: linear-gradient(135deg, #FFC107, #FFB300); }
+    .icon.result { background: linear-gradient(135deg, #E91E63, #D81B60); }
+    
+    .step-box {
+      background: #FAFAFA;
+      border-radius: 15px;
+      padding: 25px;
+      margin: 20px 0;
+      border: 2px solid #E0E0E0;
+      transition: all 0.3s ease;
+    }
+    
+    .step-box:hover {
+      border-color: #4CAF50;
+      box-shadow: 0 5px 20px rgba(76,175,80,0.2);
+      transform: translateY(-2px);
+    }
+    
+    .step-header {
+      color: #9575CD;
+      font-size: 1.4em;
+      margin-bottom: 15px;
+      font-weight: bold;
+    }
+    
+    .conclusion {
+      background: linear-gradient(135deg, rgba(76,175,80,0.1), rgba(0,150,136,0.1));
+      padding: 20px;
+      border-radius: 10px;
+      border-left: 4px solid #4CAF50;
+      margin: 15px 0;
+    }
+    
+    .conclusion-title {
+      color: #4CAF50;
+      font-weight: bold;
+      margin-bottom: 10px;
+      font-size: 1.1em;
+    }
+    
+    .background {
+      background: rgba(149,117,205,0.1);
+      padding: 15px;
+      border-radius: 8px;
+      margin: 15px 0;
+    }
+    
+    .example {
+      background: rgba(255,193,7,0.1);
+      padding: 15px;
+      border-radius: 8px;
+      margin: 15px 0;
+      border-left: 3px solid #FFC107;
+    }
+    
+    code {
+      background: #2d2d2d;
+      color: #4CAF50;
+      padding: 2px 8px;
+      border-radius: 4px;
+      font-family: 'Courier New', monospace;
+    }
+    
+    pre {
+      background: #2d2d2d;
+      color: #4CAF50;
+      padding: 20px;
+      border-radius: 10px;
+      overflow-x: auto;
+      margin: 15px 0;
+      border: 2px solid #4CAF50;
+    }
+    
+    .comparison-table {
+      width: 100%;
+      border-collapse: collapse;
+      margin: 20px 0;
+      border-radius: 10px;
+      overflow: hidden;
+      box-shadow: 0 4px 15px rgba(0,0,0,0.1);
+    }
+    
+    .comparison-table th {
+      background: linear-gradient(135deg, #4CAF50, #009688);
+      color: #333;
+      padding: 15px;
+      text-align: left;
+      font-weight: bold;
+    }
+    
+    .comparison-table td {
+      padding: 15px;
+      border-bottom: 1px solid #E0E0E0;
+    }
+    
+    .comparison-table tr:nth-child(even) {
+      background: #FAFAFA;
+    }
+    
+    .comparison-table tr:hover {
+      background: rgba(76,175,80,0.1);
+    }
+    
+    .mermaid-container {
+      background: #FAFAFA;
+      padding: 30px;
+      border-radius: 15px;
+      margin: 25px 0;
+      border: 2px solid #E0E0E0;
+    }
+    
+    .highlight-box {
+      background: linear-gradient(135deg, rgba(233,30,99,0.1), rgba(255,193,7,0.1));
+      padding: 25px;
+      border-radius: 15px;
+      border: 2px solid #E91E63;
+      margin: 25px 0;
+    }
+    
+    .benefit-list {
+      list-style: none;
+      padding: 0;
+    }
+    
+    .benefit-list li {
+      padding: 12px;
+      margin: 10px 0;
+      background: #FAFAFA;
+      border-radius: 8px;
+      border-left: 4px solid #4CAF50;
+      transition: all 0.3s ease;
+    }
+    
+    .benefit-list li:hover {
+      transform: translateX(5px);
+      background: rgba(76,175,80,0.1);
+    }
+    
+    .benefit-list li::before {
+      content: "✓ ";
+      color: #4CAF50;
+      font-weight: bold;
+      margin-right: 10px;
+    }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <header>
+      <h1>🔄 Googleフォーム × Dify AI連携</h1>
+      <p>自動返信ワークフローの完全図解</p>
+    </header>
+    
+    <div class="content">
+      
+      <!-- セクション1: 全体像 -->
+      <div class="section">
+        <h2 class="section-title">
+          <span class="icon main">🎯</span>
+          全体の流れ：フォームからAI返信までの5ステップ
+        </h2>
+        
+        <div class="conclusion">
+          <div class="conclusion-title">📌 結論</div>
+          この仕組みは「フォーム→AI→返信生成→シート反映」という自動データパイプラインです。人の手を介さずに、問い合わせを受けてからAIが返信案を作成し、スプレッドシートに記録するまでが完全自動化されています。
+        </div>
+        
+        <div class="background">
+          <strong>💡 背景</strong><br>
+          従来は問い合わせを受けたら、人がメール文を作成し、手動でコピー＆ペーストしてデータ整理をしていました。この作業には時間がかかり、ミスも発生しやすい状況でした。そこで、Googleの標準機能とDify APIを組み合わせることで、この一連の流れを自動化することが可能になりました。
+        </div>
+        
+        <div class="mermaid-container">
+          <div class="mermaid">
+            graph TB
+              A[🧍 ユーザーがフォーム入力] --> B[📋 Googleフォーム送信]
+              B --> C[📊 スプレッドシート<br/>Form Responses 1]
+              C --> D[⚙️ GAS: onFormSubmit<br/>トリガー起動]
+              D --> E[🚀 sendToDify関数<br/>データ送信]
+              E --> F[🌐 Dify API<br/>Workflowエンドポイント]
+              F --> G[🤖 AIが件名・本文を生成]
+              G --> H[📨 Webhook経由でGASに返信]
+              H --> I[📝 doPost関数<br/>JSONを受信]
+              I --> J[💾 difyresponseシートに記録]
+              J --> K[📊 XLOOKUP関数で<br/>メインシートに自動反映]
+              K --> L[✅ AI返信文が完成！]
+              
+              style A fill:#E8F5E9
+              style G fill:#F3E5F5
+              style L fill:#FFF3E0
+          </div>
+        </div>
+        
+        <div class="example">
+          <strong>📝 具体例</strong><br>
+          例えば、顧客が「製品の納期について」とフォームで問い合わせた場合：<br>
+          ① フォーム送信 → ② スプレッドシートに記録 → ③ GASがDifyに自動送信 → ④ AIが「納期は通常3-5営業日です。詳細はお見積もり時にご案内いたします」といった返信文を生成 → ⑤ 自動的にスプレッドシートに反映、という流れになります。
+        </div>
+      </div>
+      
+      <!-- セクション2: ステップ1 -->
+      <div class="section">
+        <h2 class="section-title">
+          <span class="icon step">1️⃣</span>
+          ステップ1：Googleフォーム送信
+        </h2>
+        
+        <div class="step-box">
+          <div class="step-header">📋 フォームからスプレッドシートへの自動入力</div>
+          
+          <div class="conclusion">
+            <div class="conclusion-title">📌 結論</div>
+            ユーザーがGoogleフォームを送信すると、自動的にスプレッドシートに1行が追加されます。この時点でトリガーが発動し、GASが動き始めます。
+          </div>
+          
+          <div class="background">
+            <strong>💡 背景</strong><br>
+            Googleフォームは標準機能として、送信されたデータを自動的にスプレッドシートに記録します。この機能を利用することで、データ入力作業を完全に自動化できます。さらに、フォーム送信時に「onFormSubmit」というイベントが発生するため、これをトリガーとして次の処理を開始できます。
+          </div>
+          
+          <div class="example">
+            <strong>📝 データ構造の例</strong><br>
+            <table class="comparison-table">
+              <thead>
+                <tr>
+                  <th>A列</th>
+                  <th>B列</th>
+                  <th>C列</th>
+                  <th>D列</th>
+                  <th>I列</th>
+                </tr>
+              </thead>
+              <tbody>
+                <tr>
+                  <td>Timestamp</td>
+                  <td>名前</td>
+                  <td>メール</td>
+                  <td>会社名</td>
+                  <td>ID（a000001）</td>
+                </tr>
+                <tr>
+                  <td>2025/10/13 14:30</td>
+                  <td>山田太郎</td>
+                  <td>yamada@example.com</td>
+                  <td>ABC株式会社</td>
+                  <td>a000001</td>
+                </tr>
+              </tbody>
+            </table>
+          </div>
+        </div>
+      </div>
+      
+      <!-- セクション3: ステップ2 -->
+      <div class="section">
+        <h2 class="section-title">
+          <span class="icon step">2️⃣</span>
+          ステップ2：onFormSubmit関数の実行
+        </h2>
+        
+        <div class="step-box">
+          <div class="step-header">⚙️ フォーム送信トリガーの自動起動</div>
+          
+          <div class="conclusion">
+            <div class="conclusion-title">📌 結論</div>
+            フォーム送信をトリガーとして、GASの<code>onFormSubmit</code>関数が自動実行され、最新のデータを取得してJSON形式に変換します。
+          </div>
+          
+          <div class="background">
+            <strong>💡 背景</strong><br>
+            Google Apps Scriptには「トリガー」という機能があり、特定のイベント（フォーム送信、時間、スプレッドシート編集など）をきっかけに自動的に関数を実行できます。この仕組みを使うことで、人が介入することなく、送信と同時にデータ処理が開始されます。
+          </div>
+          
+          <pre>function onFormSubmit(e) {
+  // スプレッドシートの最終行を取得
+  const sheet = SpreadsheetApp
+    .getActiveSpreadsheet()
+    .getSheetByName('Form Responses 1');
+  const lastRow = sheet.getLastRow();
+  
+  // ヘッダーとデータを取得
+  const headers = sheet.getRange(1, 1, 1, 9).getValues()[0];
+  const data = sheet.getRange(lastRow, 1, 1, 9).getValues()[0];
+  
+  // JSON化
+  const jsonData = {};
+  for (let i = 0; i < headers.length; i++) {
+    jsonData[headers[i]] = data[i];
+  }
+  
+  // Difyに送信
+  sendToDify(jsonData);
+}</pre>
+          
+          <div class="example">
+            <strong>📝 JSON化の具体例</strong><br>
+            スプレッドシートの行データ：<br>
+            <code>["2025/10/13 14:30", "山田太郎", "yamada@example.com", ...]</code><br><br>
+            ↓ JSON化後 ↓<br><br>
+            <code>{ "Timestamp": "2025/10/13 14:30", "名前": "山田太郎", "メール": "yamada@example.com", ... }</code>
+          </div>
+        </div>
+      </div>
+      
+      <!-- セクション4: ステップ3 -->
+      <div class="section">
+        <h2 class="section-title">
+          <span class="icon step">3️⃣</span>
+          ステップ3：sendToDify関数でAI呼び出し
+        </h2>
+        
+        <div class="step-box">
+          <div class="step-header">🚀 Dify APIへのデータ送信</div>
+          
+          <div class="conclusion">
+            <div class="conclusion-title">📌 結論</div>
+            JSONデータをDify Workflow APIに送信し、AIに返信文の生成を依頼します。APIキーとURLはスクリプトプロパティから安全に取得します。
+          </div>
+          
+          <div class="background">
+            <strong>💡 背景</strong><br>
+            Difyは、ノーコード/ローコードでAIワークフローを構築できるプラットフォームです。Workflow APIを使うことで、外部システム（今回はGAS）からAIの処理を呼び出すことができます。APIキーなどの機密情報は、スクリプトプロパティに保存することでコードに直接書かずに安全に管理できます。
+          </div>
+          
+          <pre>function sendToDify(data) {
+  // APIキーとURLを取得
+  const difyUrl = PropertiesService
+    .getScriptProperties()
+    .getProperty('DIFY_API_URL');
+  const difyKey = PropertiesService
+    .getScriptProperties()
+    .getProperty('DIFY_API_KEY');
+  
+  // リクエストボディを作成
+  const payload = { inputs: data };
+  
+  // HTTPオプション設定
+  const options = {
+    method: 'post',
+    headers: {
+      'Authorization': `Bearer ${difyKey}`,
+      'Content-Type': 'application/json'
+    },
+    payload: JSON.stringify(payload)
+  };
+  
+  // Dify APIにPOST送信
+  const response = UrlFetchApp.fetch(difyUrl, options);
+  Logger.log(response.getContentText());
+}</pre>
+          
+          <div class="example">
+            <strong>📝 Dify側での処理</strong><br>
+            Difyのワークフローでは、入力された情報（名前、問い合わせ内容など）を元に、AIモデル（GPT-4など）が件名と本文を生成します。例えば：<br>
+            <ul class="benefit-list">
+              <li>入力：問い合わせ内容「納期について知りたい」</li>
+              <li>AI処理：過去のデータやテンプレートを参照して適切な返信を生成</li>
+              <li>出力：件名「お問い合わせいただいた納期について」、本文「お問い合わせありがとうございます...」</li>
+            </ul>
+          </div>
+        </div>
+      </div>
+      
+      <!-- セクション5: ステップ4 -->
+      <div class="section">
+        <h2 class="section-title">
+          <span class="icon step">4️⃣</span>
+          ステップ4：DifyからのWebhook受信（doPost）
+        </h2>
+        
+        <div class="step-box">
+          <div class="step-header">📨 AI生成結果を受け取る</div>
+          
+          <div class="conclusion">
+            <div class="conclusion-title">📌 結論</div>
+            DifyがAI生成を完了すると、Webhook経由でGASの<code>doPost</code>関数にJSON形式で結果が返されます。この結果を<code>difyresponse</code>シートに記録します。
+          </div>
+          
+          <div class="background">
+            <strong>💡 背景</strong><br>
+            Webhookとは、あるシステムから別のシステムにリアルタイムでデータを送る仕組みです。DifyのワークフローでWebhook URLを設定しておくことで、AI処理が完了した瞬間に自動的にGASに結果を送信できます。GASの<code>doPost</code>関数は、外部からのPOSTリクエストを受け取るための特別な関数です。
+          </div>
+          
+          <pre>function doPost(e) {
+  // POSTされたJSONを解析
+  const json = JSON.parse(e.postData.contents);
+  
+  // difyresponseシートを取得
+  const sheet = SpreadsheetApp
+    .getActiveSpreadsheet()
+    .getSheetByName('difyresponse');
+  
+  // JSONからデータを抽出
+  const id = json.ID;
+  const subject = json.subject;
+  const body = json.body;
+  
+  // シートに追加
+  sheet.appendRow([id, subject, body, new Date()]);
+  
+  // レスポンス返却
+  return ContentService.createTextOutput('OK');
+}</pre>
+          
+          <div class="example">
+            <strong>📝 受信データの例</strong><br>
+            DifyからのJSON：<br>
+            <code>{"ID":"a000001", "subject":"お問い合わせの件について", "body":"この度はお問い合わせいただき..."}</code><br><br>
+            これが<code>difyresponse</code>シートに以下のように記録されます：<br>
+            <table class="comparison-table">
+              <thead>
+                <tr>
+                  <th>A列（ID）</th>
+                  <th>B列（件名）</th>
+                  <th>C列（本文）</th>
+                  <th>D列（日時）</th>
+                </tr>
+              </thead>
+              <tbody>
+                <tr>
+                  <td>a000001</td>
+                  <td>お問い合わせの件について</td>
+                  <td>この度はお問い合わせいただき...</td>
+                  <td>2025/10/13 14:31</td>
+                </tr>
+              </tbody>
+            </table>
+          </div>
+        </div>
+      </div>
+      
+      <!-- セクション6: ステップ5 -->
+      <div class="section">
+        <h2 class="section-title">
+          <span class="icon step">5️⃣</span>
+          ステップ5：XLOOKUP関数で自動反映
+        </h2>
+        
+        <div class="step-box">
+          <div class="step-header">📊 メインシートへのデータ統合</div>
+          
+          <div class="conclusion">
+            <div class="conclusion-title">📌 結論</div>
+            スプレッドシートの<code>XLOOKUP</code>関数を使って、<code>difyresponse</code>シートのデータをメインシート（Form Responses 1）に自動的に反映させます。
+          </div>
+          
+          <div class="background">
+            <strong>💡 背景</strong><br>
+            XLOOKUP関数は、指定した値を別のシートから検索して対応するデータを取得する強力な関数です。今回の仕組みでは、各問い合わせに付与されたID（I列）をキーとして、AIが生成した件名と本文を検索し、メインシートに表示させます。これにより、データが複数のシートに分散していても、一元的に確認できます。
+          </div>
+          
+          <div class="example">
+            <strong>📝 数式の設定例</strong><br>
+            K列（件名案）：<br>
+            <code>=XLOOKUP(I2, difyresponse!A:A, difyresponse!B:B, "")</code><br><br>
+            L列（本文案）：<br>
+            <code>=XLOOKUP(I2, difyresponse!A:A, difyresponse!C:C, "")</code><br><br>
+            
+            <table class="comparison-table">
+              <thead>
+                <tr>
+                  <th>列</th>
+                  <th>内容</th>
+                  <th>説明</th>
+                </tr>
+              </thead>
+              <tbody>
+                <tr>
+                  <td>I列</td>
+                  <td>ID</td>
+                  <td>各問い合わせの一意の識別番号</td>
+                </tr>
+                <tr>
+                  <td>K列</td>
+                  <td>件名案</td>
+                  <td>AIが生成したメール件名</td>
+                </tr>
+                <tr>
+                  <td>L列</td>
+                  <td>本文案</td>
+                  <td>AIが生成したメール本文</td>
+                </tr>
+              </tbody>
+            </table>
+          </div>
+        </div>
+      </div>
+      
+      <!-- セクション7: 追加機能 -->
+      <div class="section">
+        <h2 class="section-title">
+          <span class="icon feature">🧰</span>
+          追加機能：便利なメニュー
+        </h2>
+        
+        <div class="step-box">
+          <div class="step-header">🧠 onOpen関数でカスタムメニュー追加</div>
+          
+          <div class="conclusion">
+            <div class="conclusion-title">📌 結論</div>
+            スプレッドシートを開いたときに自動的にカスタムメニューが表示され、手動送信やプロパティ確認が簡単にできるようになります。
+          </div>
+          
+          <pre>function onOpen() {
+  const ui = SpreadsheetApp.getUi();
+  ui.createMenu('🧠 Dify連携メニュー')
+    .addItem('▶ 手動でDifyに送信', 'sendToDify')
+    .addItem('⚙ プロパティ確認', 'showScriptProperties')
+    .addToUi();
+}</pre>
+          
+          <div class="example">
+            <strong>📝 利用シーン</strong><br>
+            <ul class="benefit-list">
+              <li>フォームを経由せず、直接データをDifyに送信したい場合</li>
+              <li>APIキーやURLの設定を確認したい場合</li>
+              <li>テスト送信を行いたい場合</li>
+            </ul>
+          </div>
+        </div>
+      </div>
+      
+      <!-- セクション8: 仕組みの意義 -->
+      <div class="section">
+        <h2 class="section-title">
+          <span class="icon result">💡</span>
+          この仕組みの意義：完全自動化の実現
+        </h2>
+        
+        <div class="highlight-box">
+          <div class="conclusion">
+            <div class="conclusion-title">📌 結論</div>
+            この連携により、問い合わせ受付からAI返信生成、データ記録までが完全自動化されます。これは「問い合わせAIワークフローの最小実装版」であり、Googleの標準機能とDify APIだけで実現できる効率的なシステムです。
+          </div>
+        </div>
+        
+        <div class="background">
+          <strong>💡 従来の課題</strong><br>
+          従来の手動オペレーションでは、問い合わせ1件あたり平均10-15分の作業時間が必要でした。メール文章の作成、データ入力、整理といった繰り返し作業に多くの時間が取られ、担当者の負担が大きく、ミスも発生しやすい状況でした。また、対応の品質が担当者によってばらつくという課題もありました。
+        </div>
+        
+        <table class="comparison-table">
+          <thead>
+            <tr>
+              <th>作業</th>
+              <th>従来</th>
+              <th>今回の仕組み</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr>
+              <td>問い合わせ受付</td>
+              <td>フォーム手動確認</td>
+              <td>フォーム（自動記録）</td>
+            </tr>
+            <tr>
+              <td>メール文作成</td>
+              <td>人が毎回考えて作成</td>
+              <td>AIが数秒で自動生成</td>
+            </tr>
+            <tr>
+              <td>返信案確認</td>
+              <td>手動でコピー＆ペースト</td>
+              <td>シートで自動反映</td>
+            </tr>
+            <tr>
+              <td>データ整理</td>
+              <td>手入力で転記</td>
+              <td>JSONで自動記録</td>
+            </tr>
+            <tr>
+              <td>所要時間</td>
+              <td>10-15分/件</td>
+              <td>数秒/件（自動）</td>
+            </tr>
+            <tr>
+              <td>品質のばらつき</td>
+              <td>担当者によって変動</td>
+              <td>AIで一貫性を保持</td>
+            </tr>
+          </tbody>
+        </table>
+        
+        <div class="example">
+          <strong>📝 具体的な効果</strong><br>
+          月間100件の問い合わせがある場合：<br>
+          <ul class="benefit-list">
+            <li>削減時間：約1,000分（16.7時間）の作業時間を削減</li>
+            <li>コスト削減：人件費換算で月額数万円のコスト削減</li>
+            <li>品質向上：AIによる一貫した返信品質の維持</li>
+            <li>24時間対応：人の勤務時間に関係なく即座に返信案を生成</li>
+            <li>スケーラビリティ：問い合わせ数が増えても追加コストなし</li>
+          </ul>
+        </div>
+        
+        <div class="mermaid-container">
+          <div class="mermaid">
+            graph LR
+              A[🏢 Googleフォーム<br/>標準機能] --> D[✅ 完全自動化システム]
+              B[📊 スプレッドシート<br/>標準機能] --> D
+              C[⚙️ GAS<br/>無料ツール] --> D
+              E[🤖 Dify API<br/>AIプラットフォーム] --> D
+              D --> F[💰 コスト削減]
+              D --> G[⏱️ 時間短縮]
+              D --> H[✨ 品質向上]
+              D --> I[📈 スケーラブル]
+              
+              style D fill:#4CAF50,stroke:#009688,stroke-width:3px
+              style F fill:#FFF3E0
+              style G fill:#FFF3E0
+              style H fill:#FFF3E0
+              style I fill:#FFF3E0
+          </div>
+        </div>
+      </div>
+      
+      <!-- まとめ -->
+      <div class="section">
+        <div class="highlight-box">
+          <h3 style="color: #4CAF50; margin-bottom: 15px;">🎯 まとめ：この自動化システムの本質</h3>
+          <p>この仕組みは、単なる「自動返信システム」ではありません。以下の3つの要素が統合された、現代的なデジタルワークフローです：</p>
+          <ul class="benefit-list">
+            <li><strong>データ駆動型</strong>：すべての情報がデジタル化され、追跡可能</li>
+            <li><strong>AI活用</strong>：人間の判断が必要な部分をAIが補完</li>
+            <li><strong>ローコード実装</strong>：専門的な開発スキル不要で構築可能</li>
+          </ul>
+          <p style="margin-top: 20px; padding: 15px; background: rgba(76,175,80,0.1); border-radius: 8px;">
+            💡 <strong>ポイント</strong>：これは「問い合わせAIワークフローの最小実装版」であり、この基本形を理解すれば、他の業務自動化にも応用できます。例えば、注文受付、予約管理、アンケート分析など、様々な分野に展開可能です。
+          </p>
+        </div>
+      </div>
+      
+    </div>
+  </div>
+</body>
+</html>

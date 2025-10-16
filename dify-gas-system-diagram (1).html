@@ -1,0 +1,823 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Googleフォーム×Dify自動応答システムの完全ガイド</title>
+  <link href="https://fonts.googleapis.com/css2?family=Kosugi+Maru&display=swap" rel="stylesheet">
+  
+  <!-- Mermaid.js の読み込み -->
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/mermaid/10.6.1/mermaid.min.js"></script>
+  <script>
+    document.addEventListener('DOMContentLoaded', () => {
+      mermaid.initialize({
+        startOnLoad: true,
+        theme: 'base',
+        securityLevel: 'loose',
+        fontFamily: '"Kosugi Maru", sans-serif',
+        themeVariables: {
+          primaryColor: '#4CAF50',
+          primaryTextColor: '#333',
+          primaryBorderColor: '#E91E63',
+          lineColor: '#009688',
+          secondaryColor: '#FFC107',
+          tertiaryColor: '#9575CD'
+        },
+        flowchart: {
+          cornerRadius: 15,
+          curve: 'cardinal',
+          htmlLabels: true
+        }
+      });
+    });
+  </script>
+  
+  <style>
+    * {
+      margin: 0;
+      padding: 0;
+      box-sizing: border-box;
+    }
+    
+    body {
+      font-family: 'Kosugi Maru', sans-serif;
+      background: linear-gradient(135deg, #FAFAFA 0%, #E8F5E9 100%);
+      color: #333;
+      padding: 20px;
+      line-height: 1.8;
+    }
+    
+    .container {
+      max-width: 1200px;
+      margin: 0 auto;
+      background: white;
+      border-radius: 20px;
+      padding: 40px;
+      box-shadow: 0 10px 40px rgba(0,0,0,0.1);
+    }
+    
+    h1 {
+      color: #4CAF50;
+      text-align: center;
+      font-size: 2.2em;
+      margin-bottom: 20px;
+      padding: 20px;
+      background: linear-gradient(135deg, #4CAF50 0%, #009688 100%);
+      color: white;
+      border-radius: 15px;
+      box-shadow: 0 5px 15px rgba(76, 175, 80, 0.3);
+    }
+    
+    .intro {
+      background: #E8F5E9;
+      padding: 25px;
+      border-radius: 15px;
+      margin: 30px 0;
+      border-left: 5px solid #4CAF50;
+      font-size: 1.1em;
+    }
+    
+    .section {
+      margin: 40px 0;
+      padding: 30px;
+      background: #FAFAFA;
+      border-radius: 15px;
+      border: 2px solid #E0E0E0;
+    }
+    
+    h2 {
+      color: #009688;
+      font-size: 1.8em;
+      margin-bottom: 20px;
+      padding-bottom: 10px;
+      border-bottom: 3px solid #009688;
+      display: flex;
+      align-items: center;
+      gap: 10px;
+    }
+    
+    h3 {
+      color: #9575CD;
+      font-size: 1.4em;
+      margin: 25px 0 15px;
+      display: flex;
+      align-items: center;
+      gap: 10px;
+    }
+    
+    h4 {
+      color: #E91E63;
+      font-size: 1.2em;
+      margin: 20px 0 10px;
+    }
+    
+    .icon {
+      display: inline-block;
+      width: 40px;
+      height: 40px;
+      border-radius: 50%;
+      text-align: center;
+      line-height: 40px;
+      font-size: 1.2em;
+    }
+    
+    .icon-main {
+      background: linear-gradient(135deg, #4CAF50, #009688);
+      color: white;
+    }
+    
+    .icon-sub {
+      background: linear-gradient(135deg, #9575CD, #E91E63);
+      color: white;
+    }
+    
+    .icon-point {
+      background: linear-gradient(135deg, #FFC107, #FF9800);
+      color: white;
+    }
+    
+    .step-box {
+      background: white;
+      padding: 20px;
+      margin: 20px 0;
+      border-radius: 12px;
+      border-left: 5px solid #4CAF50;
+      box-shadow: 0 3px 10px rgba(0,0,0,0.1);
+    }
+    
+    .step-number {
+      display: inline-block;
+      width: 35px;
+      height: 35px;
+      background: linear-gradient(135deg, #4CAF50, #009688);
+      color: white;
+      border-radius: 50%;
+      text-align: center;
+      line-height: 35px;
+      font-weight: bold;
+      margin-right: 10px;
+      font-size: 1.1em;
+    }
+    
+    .example-box {
+      background: #FFF9C4;
+      padding: 20px;
+      border-radius: 12px;
+      margin: 20px 0;
+      border: 2px dashed #FFC107;
+    }
+    
+    .example-title {
+      color: #F57C00;
+      font-weight: bold;
+      margin-bottom: 10px;
+      font-size: 1.1em;
+    }
+    
+    .point-box {
+      background: linear-gradient(135deg, #E1F5FE 0%, #F3E5F5 100%);
+      padding: 20px;
+      border-radius: 12px;
+      margin: 20px 0;
+      border: 2px solid #9575CD;
+    }
+    
+    .point-title {
+      color: #9575CD;
+      font-weight: bold;
+      margin-bottom: 10px;
+      font-size: 1.2em;
+    }
+    
+    .mermaid {
+      background: white;
+      padding: 20px;
+      border-radius: 12px;
+      margin: 25px 0;
+      box-shadow: 0 3px 15px rgba(0,0,0,0.1);
+    }
+    
+    .comparison-table {
+      width: 100%;
+      border-collapse: collapse;
+      margin: 20px 0;
+      box-shadow: 0 3px 15px rgba(0,0,0,0.1);
+      border-radius: 12px;
+      overflow: hidden;
+    }
+    
+    .comparison-table th {
+      background: linear-gradient(135deg, #4CAF50, #009688);
+      color: white;
+      padding: 15px;
+      text-align: left;
+      font-size: 1.1em;
+    }
+    
+    .comparison-table td {
+      padding: 15px;
+      border-bottom: 1px solid #E0E0E0;
+      background: white;
+    }
+    
+    .comparison-table tr:last-child td {
+      border-bottom: none;
+    }
+    
+    .comparison-table tr:nth-child(even) td {
+      background: #F5F5F5;
+    }
+    
+    .error-box {
+      background: #FFEBEE;
+      padding: 20px;
+      border-radius: 12px;
+      margin: 20px 0;
+      border-left: 5px solid #E91E63;
+    }
+    
+    .success-box {
+      background: #E8F5E9;
+      padding: 20px;
+      border-radius: 12px;
+      margin: 20px 0;
+      border-left: 5px solid #4CAF50;
+    }
+    
+    code {
+      background: #263238;
+      color: #4CAF50;
+      padding: 3px 8px;
+      border-radius: 5px;
+      font-family: monospace;
+      font-size: 0.9em;
+    }
+    
+    .code-block {
+      background: #263238;
+      color: #A5D6A7;
+      padding: 20px;
+      border-radius: 12px;
+      margin: 20px 0;
+      overflow-x: auto;
+      font-family: monospace;
+      line-height: 1.6;
+      font-size: 0.9em;
+    }
+    
+    .summary-box {
+      background: linear-gradient(135deg, #4CAF50 0%, #009688 100%);
+      color: white;
+      padding: 30px;
+      border-radius: 15px;
+      margin: 30px 0;
+      box-shadow: 0 5px 20px rgba(76, 175, 80, 0.3);
+    }
+    
+    .summary-box h3 {
+      color: white;
+      border-bottom: 2px solid white;
+      padding-bottom: 10px;
+    }
+    
+    .webhook-box {
+      background: linear-gradient(135deg, #9575CD 0%, #E91E63 100%);
+      color: white;
+      padding: 25px;
+      border-radius: 12px;
+      margin: 20px 0;
+    }
+    
+    .env-box {
+      background: linear-gradient(135deg, #FFC107 0%, #FF9800 100%);
+      color: #333;
+      padding: 25px;
+      border-radius: 12px;
+      margin: 20px 0;
+    }
+    
+    ul {
+      margin: 15px 0 15px 30px;
+    }
+    
+    li {
+      margin: 10px 0;
+      line-height: 1.8;
+    }
+    
+    strong {
+      color: #E91E63;
+      font-weight: bold;
+    }
+    
+    .flow-number {
+      display: inline-block;
+      background: #009688;
+      color: white;
+      padding: 5px 15px;
+      border-radius: 20px;
+      font-weight: bold;
+      margin-right: 10px;
+    }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <h1>🤖 Googleフォーム×Dify 自動おへんじシステムの完全ガイド</h1>
+    
+    <div class="intro">
+      <strong>🎯 このシステムってなに？</strong><br>
+      これは、人が質問をフォームに書くと、AIが自動で返事を考えて、それをシートに書いてくれる、すごいシステムだよ！まるで、お手紙を出すと、かしこいロボットが自動でお返事を書いてくれるような感じなんだ。人がねている間も、お休みの日も、24時間ずっと働いてくれるんだよ。
+    </div>
+
+    <!-- 全体像 -->
+    <div class="section">
+      <h2><span class="icon icon-main">🌏</span>ぜんたいの流れ（7つのステップ）</h2>
+      
+      <div class="mermaid">
+graph TB
+    A["🎬 START<br/>ユーザーが<br/>フォーム送信"] --> B["📝 Googleフォーム<br/>回答を受付"]
+    B --> C["📊 スプレッドシート<br/>Form Responses 1<br/>自動でデータ保存"]
+    C --> D["⚙️ GAS起動<br/>onFormSubmit<br/>トリガー発火"]
+    D --> E["📦 データ準備<br/>JSON形式に変換"]
+    E --> F["🌐 Dify API<br/>workflows/run<br/>へPOST送信"]
+    F --> G["🤖 AI Workflow<br/>件名・本文生成"]
+    G --> H["📩 結果を受信<br/>GASが処理"]
+    H --> I["📝 シート更新<br/>K列・L列に書込<br/>J列にTRUEマーク"]
+    I --> J["✅ 完了！"]
+    
+    style A fill:#FFC107
+    style B fill:#4CAF50
+    style C fill:#009688
+    style D fill:#9575CD
+    style E fill:#E91E63
+    style F fill:#FF9800
+    style G fill:#4CAF50
+    style H fill:#9575CD
+    style I fill:#009688
+    style J fill:#4CAF50
+</div>
+
+      <div class="point-box">
+        <div class="point-title">💡 これがこのシステムの「魔法の流れ」</div>
+        <p>質問を入れるだけで、あとは全部自動！まるで魔法みたいに、AIがかしこい返事を作ってくれるんだ。</p>
+      </div>
+    </div>
+
+    <!-- ステップごとの詳細 -->
+    <div class="section">
+      <h2><span class="icon icon-main">⚙️</span>7つのステップを詳しく見てみよう</h2>
+
+      <!-- ステップ1 -->
+      <div class="step-box">
+        <h3><span class="flow-number">ステップ1</span>ユーザーがフォームを送信</h3>
+        <p><strong>【けつろん】</strong> すべてはここからスタート！</p>
+        <p><strong>【せつめい】</strong> 誰かがGoogleフォームに名前や質問を書いて「送信」ボタンを押すと、自動的に次のステップに進むんだ。</p>
+        
+        <div class="example-box">
+          <div class="example-title">🌟 たとえば</div>
+          <p><strong>名前:</strong> 田中太郎<br>
+          <strong>種別:</strong> 入会希望<br>
+          <strong>内容:</strong> 詳細を教えてください</p>
+        </div>
+      </div>
+
+      <!-- ステップ2 -->
+      <div class="step-box">
+        <h3><span class="flow-number">ステップ2</span>スプレッドシートに自動記録</h3>
+        <p><strong>【けつろん】</strong> フォームの内容が「Form Responses 1」シートに自動で追加される</p>
+        <p><strong>【せつめい】</strong> これは、先生が生徒の回答を出席簿に書くのと同じ。でも、自動でやってくれるから楽ちん！</p>
+        
+        <table class="comparison-table">
+          <thead>
+            <tr>
+              <th>A列</th>
+              <th>B列</th>
+              <th>C列</th>
+              <th>D列</th>
+              <th>I列</th>
+              <th>J列</th>
+              <th>K列</th>
+              <th>L列</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr>
+              <td>2025/10/13 10:30</td>
+              <td>田中太郎</td>
+              <td>tanaka@mail.com</td>
+              <td>入会希望</td>
+              <td>001</td>
+              <td>未処理</td>
+              <td>（空欄）</td>
+              <td>（空欄）</td>
+            </tr>
+          </tbody>
+        </table>
+        
+        <div class="point-box">
+          <div class="point-title">💡 このとき重要なこと</div>
+          <p>新しい行が追加された瞬間に、GAS（ロボット）が「あ、新しい質問が来た！」と気づいて動き出すんだよ。これを「トリガー」って呼ぶんだ。</p>
+        </div>
+      </div>
+
+      <!-- ステップ3 -->
+      <div class="step-box">
+        <h3><span class="flow-number">ステップ3</span>GASが自動起動（onFormSubmit）</h3>
+        <p><strong>【けつろん】</strong> ロボット（GAS）が目を覚ます</p>
+        <p><strong>【せつめい】</strong> 新しい行が追加されると、<code>onFormSubmit()</code>という関数が自動で動き出すんだ。</p>
+        
+        <div class="code-block">
+function onFormSubmit(e) {<br>
+  <span style="color:#FFC107">// フォームが送信されたら自動実行</span><br>
+  sendToDify();<br>
+}
+        </div>
+        
+        <div class="example-box">
+          <div class="example-title">🌟 たとえ話</div>
+          <p>これは、ドアに人が来たら自動で鳴るチャイムみたいなもの。「ピンポーン！」と鳴ったら、すぐに対応するんだ。</p>
+        </div>
+      </div>
+
+      <!-- ステップ4 -->
+      <div class="step-box">
+        <h3><span class="flow-number">ステップ4</span>データを準備（JSON化）</h3>
+        <p><strong>【けつろん】</strong> 質問を「配達しやすい形」に変える</p>
+        <p><strong>【せつめい】</strong> GASは、シートの最終行（今届いた質問）を読み取って、AIが理解しやすい「JSON」という形に変えるんだ。</p>
+        
+        <h4>❌ 間違った形（エラーが出る）</h4>
+        <div class="code-block">
+{<br>
+  "inputs": {<br>
+    "名前": "田中太郎",<br>
+    "問い合わせ種別": "入会希望"<br>
+  }<br>
+}
+        </div>
+        
+        <h4>✅ 正しい形（これでOK！）</h4>
+        <div class="code-block">
+{<br>
+  "inputs": {<br>
+    <span style="color:#FFC107">"form"</span>: {<br>
+      "名前": "田中太郎",<br>
+      "問い合わせ種別": "入会希望",<br>
+      "内容": "詳細を教えてください"<br>
+    }<br>
+  }<br>
+}
+        </div>
+        
+        <div class="point-box">
+          <div class="point-title">💡 なぜ「form」という箱が必要？</div>
+          <p>AIは「form」という名前の箱に入った質問を待っているんだ。だから、正しい箱に入れないと、AIが受け取れなくなっちゃうんだよ。</p>
+        </div>
+      </div>
+
+      <!-- ステップ5 -->
+      <div class="step-box">
+        <h3><span class="flow-number">ステップ5</span>Dify APIに送信</h3>
+        <p><strong>【けつろん】</strong> AIの家に質問を配達する</p>
+        <p><strong>【せつめい】</strong> GASが、準備したデータを<code>https://api.dify.ai/v1/workflows/run</code>というAIの住所に送るんだ。</p>
+        
+        <div class="mermaid">
+sequenceDiagram
+    participant G as ⚙️ GAS
+    participant D as 🌐 Dify API
+    participant A as 🤖 AI Workflow
+    
+    G->>D: 📦 質問データをPOST
+    Note over G,D: Authorization: Bearer app-xxx
+    D->>D: 🔐 認証チェック
+    D->>A: ✅ OK! データを渡す
+    A->>A: 🧠 件名・本文を生成中...
+    A->>D: 📄 結果を返す
+    D->>G: 📩 レスポンス送信
+</div>
+
+        <h4>🔐 送信するときの「合言葉」</h4>
+        <div class="env-box">
+          <strong>HTTPヘッダー（合言葉）:</strong><br>
+          • <code>Authorization: Bearer app-xxxxxxxxx</code> ← これがAPIキー（身分証明書）<br>
+          • <code>Content-Type: application/json</code> ← データの種類を伝える
+        </div>
+      </div>
+
+      <!-- ステップ6 -->
+      <div class="step-box">
+        <h3><span class="flow-number">ステップ6</span>AI Workflowが処理</h3>
+        <p><strong>【けつろん】</strong> AIがかしこい返事を作る</p>
+        <p><strong>【せつめい】</strong> Dify側で動いているWorkflow（AIの自動処理）が、質問を読んで、件名と本文を自動で作ってくれるんだ。</p>
+        
+        <div class="mermaid">
+flowchart LR
+    A["📥 質問受信"] --> B["🧠 AIが分析"]
+    B --> C["✍️ 件名生成"]
+    B --> D["✍️ 本文生成"]
+    C --> E["📦 結果をまとめる"]
+    D --> E
+    E --> F["📤 GASに返す"]
+    
+    style A fill:#4CAF50
+    style B fill:#9575CD
+    style C fill:#FFC107
+    style D fill:#FFC107
+    style E fill:#E91E63
+    style F fill:#009688
+</div>
+
+        <h4>🎯 AIが使う「環境変数」</h4>
+        <div class="env-box">
+          <strong>環境変数って？</strong> AIが使う「便利メモ」のこと。リンクや署名をあらかじめ登録しておくんだ。<br><br>
+          
+          <table class="comparison-table">
+            <thead>
+              <tr>
+                <th>変数名</th>
+                <th>内容</th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr>
+                <td><code>GAS_ENDPOINT</code></td>
+                <td>GASのWebhook URL（逆方向通信用）</td>
+              </tr>
+              <tr>
+                <td><code>LINK_SCHEDULER</code></td>
+                <td>面談予約リンク（Calendlyなど）</td>
+              </tr>
+              <tr>
+                <td><code>LINK_X_OFFICIAL</code></td>
+                <td>X（旧Twitter）公式アカウントリンク</td>
+              </tr>
+              <tr>
+                <td><code>SIGNATURE</code></td>
+                <td>メール署名文（会社名・担当者名など）</td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+        
+        <div class="example-box">
+          <div class="example-title">🌟 AIが作る結果の例</div>
+          <div class="code-block">
+{<br>
+  "output": {<br>
+    "subject": "入会希望についてのご案内",<br>
+    "body": "田中様、こんにちは。お問い合わせありがとうございます。<br>
+入会の詳細につきましてご案内いたします..."<br>
+  }<br>
+}
+          </div>
+        </div>
+      </div>
+
+      <!-- ステップ7 -->
+      <div class="step-box">
+        <h3><span class="flow-number">ステップ7</span>結果をシートに書き込み</h3>
+        <p><strong>【けつろん】</strong> AIの返事をシートに記録して完了</p>
+        <p><strong>【せつめい】</strong> GASが受け取った件名と本文を、スプレッドシートのK列（件名）とL列（本文）に書き込むんだ。そして、J列に「TRUE」と書いて、「この質問は処理済みだよ！」とマークする。</p>
+        
+        <table class="comparison-table">
+          <thead>
+            <tr>
+              <th>B列</th>
+              <th>D列</th>
+              <th>J列</th>
+              <th>K列</th>
+              <th>L列</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr>
+              <td>田中太郎</td>
+              <td>入会希望</td>
+              <td style="background:#E8F5E9"><strong>TRUE</strong></td>
+              <td>入会希望についてのご案内</td>
+              <td>田中様、こんにちは。お問い合わせ...</td>
+            </tr>
+          </tbody>
+        </table>
+        
+        <div class="success-box">
+          <strong>✅ 完了！</strong> これで、スタッフの人がシートを開けば、AIが作った返事がすぐに見られるんだよ。
+        </div>
+      </div>
+    </div>
+
+    <!-- Webhook双方向連携 -->
+    <div class="section">
+      <h2><span class="icon icon-main">🔄</span>さらに進化：Webhook双方向連携</h2>
+      
+      <div class="webhook-box">
+        <h3 style="color:white; border-color:white;">🚀 Webhookって？</h3>
+        <p>今までの流れは「GAS → Dify → GAS」だったよね。でも、Webhookを使うと、Difyから直接GASにデータを送ることもできるんだ！</p>
+      </div>
+
+      <div class="mermaid">
+graph TB
+    A["📝 フォーム送信"] --> B["⚙️ GAS"]
+    B -- "質問を送る" --> C["🌐 Dify API"]
+    C --> D["🤖 AI処理"]
+    D -- "結果を返す<br/>パターン1" --> B
+    D -- "Webhookで送る<br/>パターン2" --> E["🔗 GAS_ENDPOINT"]
+    E --> F["📝 doPost()で受信"]
+    F --> G["📊 シート更新"]
+    
+    style A fill:#4CAF50
+    style B fill:#9575CD
+    style C fill:#E91E63
+    style D fill:#FFC107
+    style E fill:#009688
+    style F fill:#9575CD
+    style G fill:#4CAF50
+</div>
+
+      <div class="point-box">
+        <div class="point-title">💡 Webhookのメリット</div>
+        <ul>
+          <li>Difyから直接データを送れる（より柔軟）</li>
+          <li>複数のシステムを連携しやすい</li>
+          <li>AIが処理を終えた瞬間に通知できる</li>
+        </ul>
+      </div>
+    </div>
+
+    <!-- スクリプトプロパティ設定UI -->
+    <div class="section">
+      <h2><span class="icon icon-main">🔐</span>スクリプトプロパティ設定UIの役割</h2>
+      
+      <div class="step-box">
+        <p><strong>【けつろん】</strong> 大事な「秘密の合言葉」を安全に保管する場所</p>
+        <p><strong>【せつめい】</strong> APIキーやURLは、コードに直接書くと危ないんだ。だから、専用の「金庫」に入れて管理するんだよ。</p>
+      </div>
+
+      <div class="example-box">
+        <div class="example-title">🌟 設定UI画面</div>
+        <strong>Dify連携設定</strong><br><br>
+        <table class="comparison-table">
+          <thead>
+            <tr>
+              <th>設定項目</th>
+              <th>保存先プロパティ名</th>
+              <th>用途</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr>
+              <td>Dify API URL</td>
+              <td><code>DIFY_API_URL</code></td>
+              <td>Workflowの実行先URL</td>
+            </tr>
+            <tr>
+              <td>Dify APIキー</td>
+              <td><code>DIFY_API_KEY</code></td>
+              <td>認証用のトークン（身分証明書）</td>
+            </tr>
+            <tr>
+              <td>スプレッドシートID</td>
+              <td><code>SPREADSHEET_ID</code></td>
+              <td>どのシートを使うか</td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+
+      <div class="point-box">
+        <div class="point-title">💡 なぜこの方法が安全？</div>
+        <p>コードにAPIキーを直接書くと、誰かがコードを見たときに盗まれる危険があるんだ。でも、スクリプトプロパティに保存すれば、コードとは別の場所に保管されるから安全なんだよ！</p>
+      </div>
+    </div>
+
+    <!-- エラーと解決 -->
+    <div class="section">
+      <h2><span class="icon icon-main">🔧</span>よくあるエラーと解決方法</h2>
+
+      <h3><span class="icon icon-sub">❌</span>エラー: form is required</h3>
+      <div class="error-box">
+        <strong>エラーメッセージ:</strong><br>
+        <code>{"code":"invalid_param","message":"form is required in input form","status":400}</code>
+      </div>
+
+      <div class="step-box">
+        <p><strong>【けつろん】</strong> 「form」という箱に入れ忘れている</p>
+        <p><strong>【せつめい】</strong> Difyは「form」という名前の箱の中に質問が入っているのを期待しているのに、直接データが送られてきたから混乱しちゃったんだ。</p>
+      </div>
+
+      <div class="example-box">
+        <div class="example-title">🌟 たとえ話で理解</div>
+        <p><strong>間違った送り方:</strong> プレゼントを包装紙なしで渡す → 相手が困る<br>
+        <strong>正しい送り方:</strong> プレゼントをきれいに包んで渡す → 相手が喜ぶ</p>
+      </div>
+
+      <h4>✅ 解決方法</h4>
+      <div class="success-box">
+        <strong>修正するコード:</strong>
+        <div class="code-block">
+<span style="color:#FF5252">// 修正前（NG）</span><br>
+const payload = { inputs: inputs };<br><br>
+
+<span style="color:#4CAF50">// 修正後（OK）</span><br>
+const payload = { inputs: { <span style="color:#FFC107">form</span>: inputs } };
+        </div>
+      </div>
+    </div>
+
+    <!-- 全体まとめ -->
+    <div class="summary-box">
+      <h3>🎉 このシステムのすごいところ（まとめ）</h3>
+      <ul>
+        <li><strong>完全自動:</strong> フォーム送信から返信生成まで人の手が不要</li>
+        <li><strong>24時間稼働:</strong> 深夜でも休日でもずっと働いてくれる</li>
+        <li><strong>高品質:</strong> ClaudeなどのLLMを使った賢い返答</li>
+        <li><strong>安全性:</strong> APIキーはスクリプトプロパティで厳重管理</li>
+        <li><strong>記録完備:</strong> すべてスプレッドシートに自動保存</li>
+        <li><strong>拡張可能:</strong> Webhookで他システムとも連携できる</li>
+        <li><strong>ノーコード:</strong> プログラミングの知識がなくても使える設計</li>
+      </ul>
+    </div>
+
+    <!-- データフロー図 -->
+    <div class="section">
+      <h2><span class="icon icon-main">📊</span>1枚で理解！データフロー完全図</h2>
+      
+      <div class="mermaid">
+graph TB
+    subgraph "ステップ1: 入力"
+        A["👤 ユーザー"] --> B["📝 Googleフォーム"]
+    end
+    
+    subgraph "ステップ2-3: 記録と起動"
+        B --> C["📊 Form Responses 1"]
+        C --> D["⚡ onFormSubmitトリガー"]
+        D --> E["⚙️ sendToDify()実行"]
+    end
+    
+    subgraph "ステップ4: データ準備"
+        E --> F["📖 最終行を読取"]
+        F --> G["🔄 JSON形式に変換"]
+        G --> H["📦 inputs.formに格納"]
+    end
+    
+    subgraph "ステップ5-6: AI処理"
+        H --> I["🌐 Dify API POST"]
+        I --> J["🔐 認証チェック"]
+        J --> K["🤖 AI Workflow起動"]
+        K --> L["✍️ 件名・本文生成"]
+        L --> M["🎯 環境変数参照<br/>LINK_SCHEDULER<br/>SIGNATURE等"]
+    end
+    
+    subgraph "ステップ7: 結果保存"
+        M --> N["📤 結果をJSON返却"]
+        N --> O["📥 GASが受信"]
+        O --> P["✏️ K列L列に書込"]
+        P --> Q["✅ J列にTRUE"]
+    end
+    
+    Q --> R["🎉 完了！"]
+    
+    style A fill:#FFC107
+    style B fill:#4CAF50
+    style C fill:#009688
+    style D fill:#9575CD
+    style E fill:#9575CD
+    style I fill:#E91E63
+    style K fill:#FFC107
+    style L fill:#4CAF50
+    style P fill:#009688
+    style R fill:#4CAF50
+</div>
+
+      <div class="point-box">
+        <div class="point-title">💡 この図を見れば一目瞭然！</div>
+        <p>左から右へ、上から下へ、データがどんどん流れていくのがわかるね。まるで川の流れみたいに、質問がスムーズにAIまで届いて、返事が戻ってくるんだ。</p>
+      </div>
+    </div>
+
+    <!-- 最後のメッセージ -->
+    <div class="section">
+      <h2><span class="icon icon-main">🌟</span>おわりに</h2>
+      
+      <div class="step-box">
+        <p>このシステムは、まるで「ドミノ倒し」みたいなんだ。最初の1つ（フォーム送信）が倒れると、次々と自動で倒れていって、最後に素晴らしいゴール（AI返答）にたどり着く。</p>
+        <p>それぞれの部品（フォーム、シート、GAS、Dify、AI）が、自分の役割をしっかり果たして協力することで、この「魔法のような自動応答システム」が完成するんだよ。</p>
+        <p>これが「AI×自動化」の力なんだ。未来のテクノロジーって、すごいね！</p>
+      </div>
+
+      <div class="summary-box">
+        <h3>🎓 学んだこと</h3>
+        <ul>
+          <li>Googleフォームとスプレッドシートの連携</li>
+          <li>Google Apps Script（GAS）の自動トリガー</li>
+          <li>Dify APIとの通信方法</li>
+          <li>AIワークフローの仕組み</li>
+          <li>JSON形式のデータ構造</li>
+          <li>環境変数とスクリプトプロパティの使い方</li>
+          <li>Webhookによる双方向連携</li>
+        </ul>
+      </div>
+    </div>
+  </div>
+</body>
+</html>
